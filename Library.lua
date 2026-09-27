@@ -4502,19 +4502,21 @@ do --// UI Source
                         Slider.Sliding = true
 
                         local Value = Slider:GetSize(Input)
-
                         Slider:Set(Value)
 
                         if InputChanged then
-                            return
+                            InputChanged:Disconnect()
+                            InputChanged = nil
                         end
 
                         InputChanged = Input.Changed:Connect(function()
                             if Input.UserInputState == Enum.UserInputState.End then
                                 Slider.Sliding = false
 
-                                InputChanged:Disconnect()
-                                InputChanged = nil
+                                if InputChanged then
+                                    InputChanged:Disconnect()
+                                    InputChanged = nil
+                                end
                             end
                         end)
                     end
@@ -4524,7 +4526,6 @@ do --// UI Source
                     if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
                         if Slider.Sliding then
                             local Value = Slider:GetSize(Input)
-
                             Slider:Set(Value)
                         end
                     end
