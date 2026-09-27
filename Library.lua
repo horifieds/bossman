@@ -29,7 +29,7 @@ do --// UI Source
         Flags = { },
         MenuKeybind = tostring(Enum.KeyCode.X),
 
-        Directory = "bossman.pub",
+        Directory = "Radiance",
         Folders = {
             Assets = "/Assets",
             Configs = "/Configs"
@@ -178,7 +178,8 @@ do --// UI Source
 
         Library.Theme = Themes.Preset
 
-        -- Custom Font
+        -- Custom Font (Disabled - Using Source Sans Pro)
+        --[[
         local CustomFont = { } do
             function CustomFont:New(Name, Weight, Style, Data)
                 if not isfile(Data.Id) then
@@ -212,6 +213,11 @@ do --// UI Source
                 Url = "https://github.com/sametexe001/luas/raw/refs/heads/main/fonts/TAHOMA-8PT-BOLD-WINDOWS-XP.TTF"
             })
         end
+        --]]
+        
+        -- Using built-in Source Sans Pro
+        Library.Font = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+        Library.BoldFont = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
 
         Library.Exit = function(Self)
             for _, Connection in Library.Connections do
@@ -243,7 +249,7 @@ do --// UI Source
 
             for Index, Property in Properties do
                 if Property == "FontFace" then
-                    Data.Instance[Property] = Library.Font
+                    Data.Instance[Property] = Font.new("rbxasset://fonts/families/SourceSansPro.json")
                 elseif Property == "TextSize" then
                     Data.Instance[Property] = Library.FontSize
                 elseif Property == "Name" then
