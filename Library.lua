@@ -171,15 +171,14 @@ do --// UI Source
                 ["Outline 3"] = Color3.fromRGB(15, 15, 15),
                 ["Outline 4"] = Color3.fromRGB(10, 10, 10),
                 ["Inactive Text"] = Color3.fromRGB(135, 135, 135),
-                ["Accent"] = Color3.fromRGB(126, 192, 255), -- 126, 192, 255
+                ["Accent"] = Color3.fromRGB(37, 150, 190), -- Changed to #2596be
                 ["Hovered Element"] = Color3.fromRGB(35, 35, 35),
             }
         }
 
         Library.Theme = Themes.Preset
 
-        -- Custom Font (Disabled - Using Source Sans Pro)
-        --[[
+        -- Custom Font
         local CustomFont = { } do
             function CustomFont:New(Name, Weight, Style, Data)
                 if not isfile(Data.Id) then
@@ -213,11 +212,6 @@ do --// UI Source
                 Url = "https://github.com/sametexe001/luas/raw/refs/heads/main/fonts/TAHOMA-8PT-BOLD-WINDOWS-XP.TTF"
             })
         end
-        --]]
-        
-        -- Using built-in Source Sans Pro
-        Library.Font = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
-        Library.BoldFont = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
 
         Library.Exit = function(Self)
             for _, Connection in Library.Connections do
@@ -249,7 +243,7 @@ do --// UI Source
 
             for Index, Property in Properties do
                 if Property == "FontFace" then
-                    Data.Instance[Property] = Font.new("rbxasset://fonts/families/SourceSansPro.json")
+                    Data.Instance[Property] = Library.Font
                 elseif Property == "TextSize" then
                     Data.Instance[Property] = Library.FontSize
                 elseif Property == "Name" then
@@ -4502,21 +4496,19 @@ do --// UI Source
                         Slider.Sliding = true
 
                         local Value = Slider:GetSize(Input)
+
                         Slider:Set(Value)
 
                         if InputChanged then
-                            InputChanged:Disconnect()
-                            InputChanged = nil
+                            return
                         end
 
                         InputChanged = Input.Changed:Connect(function()
                             if Input.UserInputState == Enum.UserInputState.End then
                                 Slider.Sliding = false
 
-                                if InputChanged then
-                                    InputChanged:Disconnect()
-                                    InputChanged = nil
-                                end
+                                InputChanged:Disconnect()
+                                InputChanged = nil
                             end
                         end)
                     end
@@ -4526,6 +4518,7 @@ do --// UI Source
                     if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
                         if Slider.Sliding then
                             local Value = Slider:GetSize(Input)
+
                             Slider:Set(Value)
                         end
                     end
