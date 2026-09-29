@@ -739,14 +739,20 @@ Track(UserInputService.InputBegan:Connect(function(Input, GameProcessed)
                 end
             elseif C.StickyAim then
                 if not C.Enabled then
+                    -- Do nothing if camlock is disabled
                 elseif CamLockedPlayer then
+                    -- Already locked - unlock
                     ClearCamLock()
                 else
+                    -- Not locked - lock onto closest player
                     local killDelay = tonumber(C.KillDelay) or 0.5
                     if tick() - LastKillTime >= killDelay then
-                        CamLockedPlayer = GetClosestPlayerToMouse(C)
+                        -- Force ignore FOV to get truly closest player
+                        CamLockedPlayer = GetClosestPlayerToMouse(C, {IgnoreFOV = false})
                         if CamLockedPlayer then
+                            -- Successfully locked
                         else
+                            -- No valid target found
                         end
                     end
                 end
