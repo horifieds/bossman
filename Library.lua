@@ -36,7 +36,10 @@ local min = math.min
 local abs = math.abs
 
 if getgenv().library then
-	getgenv().library:unload()
+	if getgenv().library.unload then
+		getgenv().library:unload()
+	end
+	getgenv().library = nil
 end
 
 -- library init
@@ -71,12 +74,12 @@ local themes = {
 	preset = {
 		["outline"] = rgb(32, 32, 38), --
 		["inline"] = rgb(60, 55, 75), --
-		["accent"] = rgb(100, 100, 255), --
+		["accent"] = rgb(153, 153, 153), --
 		["contrast"] = rgb(35, 35, 47),
 		["text"] = rgb(170, 170, 170),
 		["unselected_text"] = rgb(90, 90, 90),
 		["text_outline"] = rgb(0, 0, 0),
-		["glow"] = rgb(100, 100, 255),
+		["glow"] = rgb(153, 153, 153),
 	},
 
 	utility = {
