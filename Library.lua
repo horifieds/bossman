@@ -428,7 +428,7 @@ library.gui = library:create("ScreenGui", {
 -- library functions
 function library:window(properties)
 	local cfg = {
-		name = properties.Name or properties.name or properties.Title or properties.title or "boss$$$",
+		name = properties.Name or properties.name or properties.Title or properties.title or "$$$boss$$$",
 		size = properties.Size or properties.size or dim2(0, 500, 0, 650),
 	}
 
@@ -522,7 +522,7 @@ function library:window(properties)
 		FontFace = library.font,
 		TextColor3 = Color3.fromRGB(170, 170, 170),
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
-		Text = "boss$$$.cc",
+		Text = "$$$boss$$$.cc",
 		TextStrokeTransparency = 0.5,
 		Size = UDim2.new(0, 0, 1, 0),
 		Position = UDim2.new(0, 8, 0, 0),
@@ -2312,7 +2312,7 @@ end
 function library:notification(properties)
 	local cfg = {
 		time = properties.time or 5,
-		text = properties.text or properties.name or "boss$$$ notification",
+		text = properties.text or properties.name or "$$$boss$$$ notification",
 	}
 
 	-- 28 offset
