@@ -926,24 +926,36 @@ Track(RunService.RenderStepped:Connect(function(Dt)
         end
 
         if CamAimPos then
-            -- AutoShoot: automatically click when target is visible (Revolver only, 190 studs max)
+            -- AutoShoot: automatically click when target is visible
+            -- Revolver: 190 studs max, DoubleBarrel: 30 studs max
             if C.AutoShoot and CamLockedPlayer and CamLockedPlayer.Character then
                 local myChar = LocalPlayer.Character
                 local equippedTool = myChar and myChar:FindFirstChildOfClass("Tool")
                 
-                if equippedTool and equippedTool.Name == "[Revolver]" then
-                    local myRoot = myChar:FindFirstChild("HumanoidRootPart")
-                    local targetRoot = CamLockedPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if equippedTool then
+                    local toolName = equippedTool.Name
+                    local maxDistance = nil
                     
-                    if myRoot and targetRoot then
-                        local distance = (myRoot.Position - targetRoot.Position).Magnitude
-                        local screenPos, onScreen = Camera:WorldToViewportPoint(targetRoot.Position)
+                    if toolName == "[Revolver]" then
+                        maxDistance = 190
+                    elseif toolName == "[DoubleBarrel]" then
+                        maxDistance = 30
+                    end
+                    
+                    if maxDistance then
+                        local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+                        local targetRoot = CamLockedPlayer.Character:FindFirstChild("HumanoidRootPart")
                         
-                        if distance <= 190 and onScreen and screenPos.Z > 0 and not IsBehindWall(targetRoot) then
-                            local VIM = game:GetService("VirtualInputManager")
-                            VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                            task.wait()
-                            VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                        if myRoot and targetRoot then
+                            local distance = (myRoot.Position - targetRoot.Position).Magnitude
+                            local screenPos, onScreen = Camera:WorldToViewportPoint(targetRoot.Position)
+                            
+                            if distance <= maxDistance and onScreen and screenPos.Z > 0 and not IsBehindWall(targetRoot) then
+                                local VIM = game:GetService("VirtualInputManager")
+                                VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                                task.wait()
+                                VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                            end
                         end
                     end
                 end
