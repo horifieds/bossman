@@ -40,8 +40,8 @@ getgenv().Library = {
         ['Enabled'] = true,
         ['ShowLocalPlayer'] = true,
         ['Distance'] = 7520,
-        ['RefreshRate'] = 60,
-        ['Font'] = 'TahomaBold',
+        ['RefreshRate'] = 30,
+        ['Font'] = 'Tahoma',
         ['FontSize'] = 12,
         ['FontType'] = 'none',
 
@@ -110,24 +110,6 @@ getgenv().Library = {
                 ['Color'] = Color3.fromRGB(255, 255, 255),
             },
         },
-
-        ['Flags'] = {
-            ['Walking'] = {
-                ['Enabled'] = true,
-                ['Color'] = Color3.fromRGB(255, 0, 0),
-                ['Text'] = "Walking",
-            },
-            ['Jumping'] = {
-                ['Enabled'] = true,
-                ['Color'] = Color3.fromRGB(144, 238, 144),
-                ['Text'] = "Jumping",
-            },
-            ['Swimming'] = {
-                ['Enabled'] = true,
-                ['Color'] = Color3.fromRGB(0, 255, 255),
-                ['Text'] = "Swimming",
-            },
-        }
     }
 }
 
@@ -754,7 +736,7 @@ function Library:InitEsp(Data)
     do
         Objects["TargetName"] = self:CreateObjects("TextLabel", {
             Parent = Objects["TopTextHolder"],
-            FontFace = Library.TahomaBold,
+            FontFace = Library.Tahoma,
             TextSize = 12,
             LayoutOrder = 2,
             TextColor3 = Table['Texts']['Name']['Color'],
@@ -792,72 +774,6 @@ function Library:InitEsp(Data)
 
         self:CreateObjects("UIStroke", {
             Parent = Objects["Distance"],
-            Color = Color3.fromRGB(0, 0, 0),
-            LineJoinMode = Enum.LineJoinMode.Miter,
-        })
-
-        Objects["WalkFlag"] = self:CreateObjects("TextLabel", {
-            Parent = Objects["RightTextHolder"],
-            FontFace = Library.SmallestPixel,
-            TextSize = 9,
-            LayoutOrder = 1,
-            TextColor3 = Table['Flags']['Walking']['Color'],
-            Text = Table['Flags']['Walking']['Text'],
-            TextXAlignment = Enum.TextXAlignment.Left,
-            BorderSizePixel = 0,
-            Visible = false,
-            BackgroundTransparency = 1,
-            ZIndex = 5,
-            AutomaticSize = Enum.AutomaticSize.XY,
-            Size = Dim2(0, 0, 0, 0),
-        })
-
-        self:CreateObjects("UIStroke", {
-            Parent = Objects["WalkFlag"],
-            Color = Color3.fromRGB(0, 0, 0),
-            LineJoinMode = Enum.LineJoinMode.Miter,
-        })
-
-        Objects["JumpFlag"] = self:CreateObjects("TextLabel", {
-            Parent = Objects["RightTextHolder"],
-            FontFace = Library.SmallestPixel,
-            TextSize = 9,
-            LayoutOrder = 2,
-            TextColor3 = Table['Flags']['Jumping']['Color'],
-            Text = Table['Flags']['Jumping']['Text'],
-            TextXAlignment = Enum.TextXAlignment.Left,
-            BorderSizePixel = 0,
-            Visible = false,
-            BackgroundTransparency = 1,
-            ZIndex = 5,
-            AutomaticSize = Enum.AutomaticSize.XY,
-            Size = Dim2(0, 0, 0, 0),
-        })
-
-        self:CreateObjects("UIStroke", {
-            Parent = Objects["JumpFlag"],
-            Color = Color3.fromRGB(0, 0, 0),
-            LineJoinMode = Enum.LineJoinMode.Miter,
-        })
-
-        Objects["SwimmingFlag"] = self:CreateObjects("TextLabel", {
-            Parent = Objects["RightTextHolder"],
-            FontFace = Library.SmallestPixel,
-            TextSize = 9,
-            LayoutOrder = 4,
-            TextColor3 = Table['Flags']['Swimming']['Color'],
-            Text = Table['Flags']['Swimming']['Text'],
-            TextXAlignment = Enum.TextXAlignment.Left,
-            BorderSizePixel = 0,
-            Visible = false,
-            BackgroundTransparency = 1,
-            ZIndex = 5,
-            AutomaticSize = Enum.AutomaticSize.XY,
-            Size = Dim2(0, 0, 0, 0),
-        })
-
-        self:CreateObjects("UIStroke", {
-            Parent = Objects["SwimmingFlag"],
             Color = Color3.fromRGB(0, 0, 0),
             LineJoinMode = Enum.LineJoinMode.Miter,
         })
@@ -1137,84 +1053,6 @@ function Library:AddTarget(Player)
         Data['BindChildren'] = ChildHandler.BindChildren;
     end
 
-    local FlagsHandler = {}; do
-        function FlagsHandler.BindFlags(Humanoid)
-            if Data['Conns']['MoveDir'] then
-                Data['Conns']['MoveDir']:Disconnect();
-            end;
-
-            if Data['Conns']['StateChange'] then
-                Data['Conns']['StateChange']:Disconnect();
-            end;
-
-            local Objects = Data['Objects']
-            Data['JumpActive'] = false;
-            Data['WalkActive'] = false;
-            Data['FallingActive'] = false;
-            Data['SwimmingActive'] = false;
-
-            Objects['WalkFlag'].Visible = false;
-            Objects['JumpFlag'].Visible = false;
-            Objects['SwimmingFlag'].Visible = false;
-
-            Data['Conns']['MoveDir'] = Humanoid:GetPropertyChangedSignal('MoveDirection'):Connect(function()
-                local Walking = Humanoid.MoveDirection ~= ZeroVector3;
-
-                if Walking and not Data['WalkActive'] then
-                    Data['WalkActive'] = true;
-
-                    if Data['JumpActive'] then
-                        Objects['WalkFlag'].LayoutOrder = 2;
-                    else
-                        Objects['WalkFlag'].LayoutOrder = 1;
-                        Objects['JumpFlag'].LayoutOrder = 2;
-                    end
-
-                    Objects['WalkFlag'].Visible = Table['Flags']['Walking']['Enabled']
-                elseif not Walking and Data['WalkActive'] then
-                    Data['WalkActive'] = false;
-                    Objects['WalkFlag'].Visible = false;
-
-                    if Data['JumpActive'] then
-                        Objects['JumpFlag'].LayoutOrder = 1;
-                    end
-                end
-            end)
-
-            Data['Conns']['StateChange'] = Humanoid.StateChanged:Connect(function(_, NewState)
-                if NewState == Enum.HumanoidStateType.Freefall and not Data['JumpActive'] then
-                    Data['JumpActive'] = true;
-
-                    if Data['WalkActive'] then
-                        Objects['JumpFlag'].LayoutOrder = 2;
-                    else
-                        Objects['JumpFlag'].LayoutOrder = 1;
-                        Objects['WalkFlag'].LayoutOrder = 2;
-                    end
-
-                    Objects['JumpFlag'].Visible = Table['Flags']['Jumping']['Enabled']
-                elseif NewState ~= Enum.HumanoidStateType.Jumping and Data['JumpActive'] then
-                    Data['JumpActive'] = false;
-                    Objects['JumpFlag'].Visible = false;
-
-                    if Data['WalkActive'] then
-                        Objects['WalkFlag'].LayoutOrder = 1;
-                    end
-                end
-
-                if NewState == Enum.HumanoidStateType.Swimming and not Data['SwimmingActive'] then
-                    Data['SwimmingActive'] = true;
-                    Objects['SwimmingFlag'].Visible = Table['Flags']['Swimming']['Enabled']
-                elseif NewState ~= Enum.HumanoidStateType.Swimming and Data['SwimmingActive'] then
-                    Data['SwimmingActive'] = false;
-                    Objects['SwimmingFlag'].Visible = false;
-                end
-            end)
-        end
-
-        Data['BindFlags'] = FlagsHandler.BindFlags;
-    end
-
     local CharacterHandler = {}; do
         function CharacterHandler.OnCharacter(Character)
             Data['Character'] = Character;
@@ -1222,10 +1060,6 @@ function Library:AddTarget(Player)
             Data['Humanoid'] = nil;
             Data['Children'] = nil;
             Data['Alive'] = false;
-            Data['WalkActive'] = false;
-            Data['JumpActive'] = false;
-            Data['FallingActive'] = false;
-            Data['SwimmingActive'] = false;
 
             if not Character or not Character.Parent then
                 return;
@@ -1256,7 +1090,6 @@ function Library:AddTarget(Player)
 
             Data['BindChildren'](Character);
             Data['BindHealth'](Humanoid);
-            Data['BindFlags'](Humanoid);
         end
 
         Data['Conns']['CharAdded'] = Player.CharacterAdded:Connect(function(Character)
