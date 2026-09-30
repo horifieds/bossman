@@ -1483,29 +1483,12 @@ function library:window(properties)
 	library:apply_theme(glow, "accent", "ImageColor3")
 	--
 
-	-- playerlist
-	local selected_button
-	local selected_player
-	local player_buttons = {}
-
-	function library.get_priority(player)
-		return player_buttons[player.Name].priority.Text
-	end
-
-	local playerlist = library:create("Frame", {
+	-- keybind list
+	local old_kblist = library:create("Frame", {
 		Parent = library.gui,
 		Name = "",
-		Active = true,
-		Draggable = true,
-		AnchorPoint = Vector2.new(0, 0),
-		Position = UDim2.new(0, inline1.AbsolutePosition.X - 358 - 8, 0, inline1.AbsolutePosition.Y + 1),
-		BorderColor3 = Color3.fromRGB(8, 8, 8),
-		Size = UDim2.new(0, 358, 0, 328),
-		BackgroundColor3 = Color3.fromRGB(56, 56, 56),
-	})
-	library:make_resizable(playerlist)
-
-	table.insert(library.main_frame, playerlist)
+		BorderColor3 = Color3.fromRGB(19, 19, 19),
+		AnchorPoint = Vector2.new(0, 0.5),
 
 	local name = library:create("TextLabel", {
 		Parent = playerlist,
@@ -2246,18 +2229,12 @@ function library:window(properties)
 		old_kblist.Visible = bool
 	end
 
-	function cfg.toggle_playerlist(bool)
-		playerlist.Visible = bool
-	end
-
 	function cfg.toggle_watermark(bool)
 		__holder.Visible = bool
 	end
 
 	function cfg.set_menu_visibility(bool, pl)
 		WINDOW_PATH.Visible = bool
-
-		playerlist.Visible = flags["player_list"] and bool or false
 	end
 
 	return setmetatable(cfg, library)
