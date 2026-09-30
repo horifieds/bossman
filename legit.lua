@@ -555,28 +555,48 @@ local function RewriteShootArgs(Args)
     if typeof(EventName) ~= "string" then return false end
     local Lower = string.lower(EventName)
     
+    -- Debug: print when ANY shoot event happens
+    if EventName == "Shoot" or Lower == "shoot" then
+        print("[DEBUG] Shoot event detected!")
+        print("[DEBUG] _G.autokill exists:", _G.autokill ~= nil)
+        if _G.autokill then
+            print("[DEBUG] _G.autokill.active:", _G.autokill.active)
+            print("[DEBUG] _G.autokill.target:", _G.autokill.target)
+        end
+    end
+    
     -- PRIORITY 1: AutoKill TargetAim (check if AutoKill is active)
     if _G.autokill and _G.autokill.active and _G.autokill.target then
+        print("[DEBUG] AutoKill conditions met!")
         if EventName == "Shoot" or Lower == "shoot" then
             local target = _G.autokill.target
             if target and target.Character then
                 local head = target.Character:FindFirstChild("Head")
                 if head then
                     local aimPos = head.Position -- 0 prediction
+                    print("[DEBUG] AutoKill aiming at:", aimPos, "Target:", target.Name)
                     local Data = Args[2]
+                    print("[DEBUG] Data type:", typeof(Data))
                     
                     if typeof(Data) == "table" then
                         Data.AIM = aimPos
                         if Data.Aim ~= nil then Data.Aim = aimPos end
+                        print("[DEBUG] Modified table shoot packet!")
                         return true
                     elseif typeof(Data) == "Vector3" then
                         Args[2] = aimPos
+                        print("[DEBUG] Modified Vector3 shoot packet!")
                         return true
                     elseif typeof(Data) == "CFrame" then
                         Args[2] = CFrame.new(aimPos)
+                        print("[DEBUG] Modified CFrame shoot packet!")
                         return true
                     end
+                else
+                    print("[DEBUG] Target has no head!")
                 end
+            else
+                print("[DEBUG] Target or target.Character is nil!")
             end
         end
     end
