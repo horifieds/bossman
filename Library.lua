@@ -332,19 +332,37 @@ end
 
 function library:config_list_update()
 	if not library.config_holder then
+		warn("[Config] config_holder not found!")
 		return
 	end
 
 	local list = {}
+	local config_dir = library.directory .. "/configs"
+	
+	-- Check if directory exists
+	if not isfolder(config_dir) then
+		warn("[Config] Config directory doesn't exist!")
+		makefolder(config_dir)
+		return
+	end
+	
+	local files = listfiles(config_dir)
+	print("[Config] Found " .. #files .. " files in config directory")
 
-	for idx, file in next, listfiles(library.directory .. "/configs") do
+	for idx, file in next, files do
+		print("[Config] Processing file: " .. file)
 		local name = string.split(file, "/configs/")[2]
+		if not name then
+			name = string.split(file, "\\configs\\")[2]  -- Windows path
+		end
 		if name then
 			name = string.split(name, ".cfg")[1]
 			list[#list + 1] = name
+			print("[Config] Added to list: " .. name)
 		end
 	end
-
+	
+	print("[Config] Total configs in list: " .. #list)
 	library.config_holder:refresh_options(list)
 end
 
