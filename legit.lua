@@ -551,41 +551,15 @@ local function RewriteMousePosUpdate(Args)
 end
 
 local function RewriteShootArgs(Args)
-    local EventName = Args[1]
-    if typeof(EventName) ~= "string" then return false end
-    local Lower = string.lower(EventName)
-    
-    -- PRIORITY 1: AutoKill Silent Aim (overrides everything when active)
-    if _G.autokill and _G.autokill.active and _G.autokill.aim and _G.autokill.aim.Pos then
-        print("[AutoKill Debug] Active:", _G.autokill.active, "Pos:", _G.autokill.aim.Pos)
-        if EventName == "Shoot" or Lower == "shoot" then
-            print("[AutoKill Debug] Shoot event detected! EventName:", EventName)
-            local Data = Args[2]
-            print("[AutoKill Debug] Data type:", typeof(Data))
-            if typeof(Data) == "table" then
-                print("[AutoKill Debug] Modifying table shoot packet to:", _G.autokill.aim.Pos)
-                Data.AIM = _G.autokill.aim.Pos
-                if Data.Aim ~= nil then Data.Aim = _G.autokill.aim.Pos end
-                return true
-            elseif typeof(Data) == "Vector3" then
-                print("[AutoKill Debug] Modifying Vector3 shoot packet")
-                Args[2] = _G.autokill.aim.Pos
-                return true
-            elseif typeof(Data) == "CFrame" then
-                print("[AutoKill Debug] Modifying CFrame shoot packet")
-                Args[2] = CFrame.new(_G.autokill.aim.Pos)
-                return true
-            end
-        end
-    end
-    
-    -- PRIORITY 2: HC Silent Aim (normal operation)
     local HC = ENV.HC
     local AimStore = ENV.HC_Aim
     if not HC or not HC.SilentAim then return false end
 
     local Silent = HC.SilentAim
-    
+    local EventName = Args[1]
+    if typeof(EventName) ~= "string" then return false end
+    local Lower = string.lower(EventName)
+
     -- Anti Aim Viewer: force MousePosUpdate to REAL crosshair (never silent target)
     if (EventName == "MousePosUpdate" or Lower == "mouseposupdate") and Silent.AntiAimViewer then
         return RewriteMousePosUpdate(Args)
