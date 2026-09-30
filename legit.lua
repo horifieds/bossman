@@ -551,14 +551,42 @@ local function RewriteMousePosUpdate(Args)
 end
 
 local function RewriteShootArgs(Args)
+    local EventName = Args[1]
+    if typeof(EventName) ~= "string" then return false end
+    local Lower = string.lower(EventName)
+    
+    -- PRIORITY 1: AutoKill TargetAim (check if AutoKill is active)
+    if _G.autokill and _G.autokill.active and _G.autokill.target then
+        if EventName == "Shoot" or Lower == "shoot" then
+            local target = _G.autokill.target
+            if target and target.Character then
+                local head = target.Character:FindFirstChild("Head")
+                if head then
+                    local aimPos = head.Position -- 0 prediction
+                    local Data = Args[2]
+                    
+                    if typeof(Data) == "table" then
+                        Data.AIM = aimPos
+                        if Data.Aim ~= nil then Data.Aim = aimPos end
+                        return true
+                    elseif typeof(Data) == "Vector3" then
+                        Args[2] = aimPos
+                        return true
+                    elseif typeof(Data) == "CFrame" then
+                        Args[2] = CFrame.new(aimPos)
+                        return true
+                    end
+                end
+            end
+        end
+    end
+    
+    -- PRIORITY 2: Normal HC Silent Aim
     local HC = ENV.HC
     local AimStore = ENV.HC_Aim
     if not HC or not HC.SilentAim then return false end
 
     local Silent = HC.SilentAim
-    local EventName = Args[1]
-    if typeof(EventName) ~= "string" then return false end
-    local Lower = string.lower(EventName)
 
     -- Anti Aim Viewer: force MousePosUpdate to REAL crosshair (never silent target)
     if (EventName == "MousePosUpdate" or Lower == "mouseposupdate") and Silent.AntiAimViewer then
