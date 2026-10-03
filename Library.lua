@@ -4826,6 +4826,296 @@ function library:panel(properties)
 		end)
 	end
 end
+
+-- ============================================
+-- TARGET HUD METHOD
+-- ============================================
+function library:create_target_hud(properties)
+	local cfg = {
+		enabled = properties.enabled or true,
+	}
+	
+	-- State
+	local target = nil
+	local dragging = false
+	local dragInput = nil
+	local dragStart = nil
+	local startPos = nil
+	
+	-- Create ScreenGui
+	local gui = library:create("ScreenGui", {
+		Name = "TargetHUD",
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+		ResetOnSpawn = false,
+		Parent = library.gui,
+	})
+	
+	-- Main Frame
+	local frame = library:create("Frame", {
+		Name = "TargetFrame",
+		Size = UDim2.new(0, 450, 0, 110),
+		Position = UDim2.new(0.5, -225, 0.3, 0),
+		BackgroundColor3 = themes.preset.contrast,
+		BorderColor3 = themes.preset.outline,
+		BorderSizePixel = 2,
+		Active = true,
+		Visible = false,
+		Parent = gui,
+	})
+	
+	library:apply_theme(frame, "contrast", "BackgroundColor3")
+	library:apply_theme(frame, "outline", "BorderColor3")
+	
+	-- Outer Border
+	local outerBorder = library:create("UIStroke", {
+		Color = themes.preset.accent,
+		Thickness = 1,
+		Transparency = 0.5,
+		Parent = frame,
+	})
+	
+	library:apply_theme(outerBorder, "accent", "Color")
+	
+	-- Title Label
+	local titleLabel = library:create("TextLabel", {
+		Name = "Title",
+		Size = UDim2.new(1, -10, 0, 25),
+		Position = UDim2.new(0, 5, 0, 5),
+		BackgroundTransparency = 1,
+		Text = "Target HUD",
+		TextColor3 = themes.preset.accent,
+		TextSize = 13,
+		FontFace = library.font,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = frame,
+	})
+	
+	library:apply_theme(titleLabel, "accent", "TextColor3")
+	
+	-- Content Frame
+	local contentFrame = library:create("Frame", {
+		Name = "Content",
+		Size = UDim2.new(1, -20, 0, 70),
+		Position = UDim2.new(0, 10, 0, 35),
+		BackgroundColor3 = themes.preset.outline,
+		BorderColor3 = themes.preset.inline,
+		BorderSizePixel = 1,
+		Parent = frame,
+	})
+	
+	library:apply_theme(contentFrame, "outline", "BackgroundColor3")
+	library:apply_theme(contentFrame, "inline", "BorderColor3")
+	
+	-- Profile Picture (Headshot)
+	local profilePicture = library:create("ImageLabel", {
+		Name = "ProfilePic",
+		Size = UDim2.new(0, 60, 0, 60),
+		Position = UDim2.new(0, 5, 0, 5),
+		BackgroundColor3 = rgb(25, 25, 30),
+		BorderColor3 = themes.preset.inline,
+		BorderSizePixel = 1,
+		Image = "",
+		Parent = contentFrame,
+	})
+	
+	library:apply_theme(profilePicture, "inline", "BorderColor3")
+	
+	-- Display Name Label
+	local displayNameLabel = library:create("TextLabel", {
+		Name = "DisplayName",
+		Size = UDim2.new(1, -80, 0, 18),
+		Position = UDim2.new(0, 75, 0, 5),
+		BackgroundTransparency = 1,
+		Text = "Player",
+		TextColor3 = themes.preset.text,
+		TextSize = 13,
+		FontFace = library.font,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = contentFrame,
+	})
+	
+	library:apply_theme(displayNameLabel, "text", "TextColor3")
+	
+	-- Health Bar Background
+	local healthBarBG = library:create("Frame", {
+		Name = "HealthBarBG",
+		Size = UDim2.new(1, -80, 0, 18),
+		Position = UDim2.new(0, 75, 0, 25),
+		BackgroundColor3 = rgb(25, 25, 30),
+		BorderColor3 = rgb(50, 50, 60),
+		BorderSizePixel = 1,
+		Parent = contentFrame,
+	})
+	
+	-- Health Bar Fill
+	local healthBar = library:create("Frame", {
+		Name = "HealthBar",
+		Size = UDim2.new(1, 0, 1, 0),
+		Position = UDim2.new(0, 0, 0, 0),
+		BackgroundColor3 = themes.preset.accent,
+		BorderSizePixel = 0,
+		Parent = healthBarBG,
+	})
+	
+	library:apply_theme(healthBar, "accent", "BackgroundColor3")
+	
+	-- Health Text
+	local healthText = library:create("TextLabel", {
+		Name = "HealthText",
+		Size = UDim2.new(1, 0, 1, 0),
+		Position = UDim2.new(0, 0, 0, 0),
+		BackgroundTransparency = 1,
+		Text = "100 / 100",
+		TextColor3 = rgb(255, 255, 255),
+		TextSize = 13,
+		FontFace = library.font,
+		ZIndex = 2,
+		Parent = healthBarBG,
+	})
+	
+	-- Distance Label
+	local distanceLabel = library:create("TextLabel", {
+		Name = "Distance",
+		Size = UDim2.new(1, -80, 0, 16),
+		Position = UDim2.new(0, 75, 0, 48),
+		BackgroundTransparency = 1,
+		Text = "0 studs",
+		TextColor3 = themes.preset.unselected_text,
+		TextSize = 12,
+		FontFace = library.font,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = contentFrame,
+	})
+	
+	library:apply_theme(distanceLabel, "unselected_text", "TextColor3")
+	
+	-- Setup Dragging
+	frame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+			dragStart = input.Position
+			startPos = frame.Position
+			
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+	
+	frame.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement then
+			dragInput = input
+		end
+	end)
+	
+	uis.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			local delta = input.Position - dragStart
+			frame.Position = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
+	
+	-- Set Target
+	function cfg:set_target(player)
+		if player and player:IsA("Player") then
+			target = player
+			cfg.enabled = true
+			frame.Visible = true
+			
+			-- Load profile picture
+			local userId = player.UserId
+			local thumbType = Enum.ThumbnailType.HeadShot
+			local thumbSize = Enum.ThumbnailSize.Size150x150
+			local content, isReady = players:GetUserThumbnailAsync(userId, thumbType, thumbSize)
+			profilePicture.Image = content
+			
+			-- Set display name
+			displayNameLabel.Text = player.DisplayName .. " (@" .. player.Name .. ")"
+		else
+			cfg:clear_target()
+		end
+	end
+	
+	-- Clear Target
+	function cfg:clear_target()
+		target = nil
+		cfg.enabled = false
+		frame.Visible = false
+	end
+	
+	-- Toggle Visibility
+	function cfg:toggle(visible)
+		if visible ~= nil then
+			frame.Visible = visible and target ~= nil
+		else
+			frame.Visible = not frame.Visible and target ~= nil
+		end
+	end
+	
+	-- Update Loop
+	library:connection(run.RenderStepped, function()
+		if not cfg.enabled or not target then return end
+		
+		-- Check if target still exists
+		if not target.Parent then
+			cfg:clear_target()
+			return
+		end
+		
+		local character = target.Character
+		if not character then
+			cfg:clear_target()
+			return
+		end
+		
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		local rootPart = character:FindFirstChild("HumanoidRootPart")
+		
+		if not humanoid or not rootPart then
+			cfg:clear_target()
+			return
+		end
+		
+		-- Update health
+		local health = math.floor(humanoid.Health)
+		local maxHealth = math.floor(humanoid.MaxHealth)
+		local healthPercent = health / maxHealth
+		
+		healthText.Text = health .. " / " .. maxHealth
+		tween_service:Create(healthBar, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(healthPercent, 0, 1, 0)
+		}):Play()
+		
+		-- Update health bar color based on percentage
+		if healthPercent > 0.6 then
+			healthBar.BackgroundColor3 = rgb(50, 150, 255) -- Blue
+		elseif healthPercent > 0.3 then
+			healthBar.BackgroundColor3 = rgb(255, 200, 50) -- Yellow
+		else
+			healthBar.BackgroundColor3 = rgb(255, 50, 50) -- Red
+		end
+		
+		-- Update distance
+		local myChar = lp.Character
+		if myChar then
+			local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+			if myRoot then
+				local distance = (myRoot.Position - rootPart.Position).Magnitude
+				distanceLabel.Text = math.floor(distance) .. " studs"
+			end
+		end
+	end)
+	
+	return cfg
+end
+
 --
 --
 
